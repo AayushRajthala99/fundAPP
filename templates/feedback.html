@@ -1,0 +1,33 @@
+{% extends "base.html" %} {% block title %}Feedback{% endblock %} {% block
+content %}
+<div class="feedback-container">
+  <h1>FEEDBACK</h1>
+  <form method="POST" action="{{ url_for('feedback') }}">
+    <label for="username">Full Name</label>
+    <input
+      type="text"
+      id="username"
+      name="username"
+      placeholder="Enter your full name"
+      required
+    />
+    <label for="feedback_message">Message</label>
+    <textarea
+      name="feedback_message"
+      id="feedback_message"
+      placeholder="Your feedback goes here..."
+      required
+    ></textarea>
+    <button type="submit">Send Feedback</button>
+  </form>
+</div>
+
+{% if template %}
+<div class="feedback-response">
+  {{template | safe}} {% endif %} {% if feedbacks %}
+  <p>Feedbacks :</p>
+  {% for feedback in feedbacks %}
+  <p>{{ feedback | safe }}</p>
+  {% endfor %}
+</div>
+{% endif %} {% endblock %}

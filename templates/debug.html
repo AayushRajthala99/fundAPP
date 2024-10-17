@@ -1,0 +1,35 @@
+{% extends "base.html" %} {% block title %}DEBUG{% endblock %} {% block content
+%}
+<div class="debug-container">
+  <h1>DEBUG</h1>
+  {% if count == 0 %}
+  <br />
+  <div style="color: red">No User Found.</div>
+  {% else %}
+  <table class="user-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Password</th>
+        <th>Role</th>
+        <th>Balance</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.password }}</td>
+        <td>{{ user.role }}</td>
+        <td style="color: green">${{ user.balance }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

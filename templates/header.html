@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title if title else "fundAPP" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            {% if 'access_token' in session %}
+            {% if session.get('role')=='admin' %}
+            <a href="{{ url_for('admin') }}">Manage Users</a>
+            {% endif %}
+
+            <a href="{{ url_for('transactions') }}">Transactions</a>
+            <a href="{{ url_for('transfer') }}">Transfer</a>
+            <a href="{{ url_for('change_password') }}">Change Password</a>
+
+
+            {% if session.get('role')=='admin' %}
+            <a href="{{ url_for('web_reset_db') }}"
+                onclick="return confirm('Are you sure you want to reset the database?');">Reset Database</a>
+            {% endif %}
+
+            <a href="{{ url_for('logout') }}">Logout</a>
+
+            {% if session.get('username') %}
+            <p>Welcome <b class="username">{{session.get('username')}}</b></p>
+            {% endif %}
+
+            {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}

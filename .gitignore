@@ -1,0 +1,7 @@
+*.log
+.*
+!.gitignore
+!.env.example
+__pycache__
+cache
+flask_session

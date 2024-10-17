@@ -1,0 +1,328 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+
+header {
+  background-color: #333;
+  color: white;
+  padding: 10px 0;
+}
+
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #333;
+  color: white;
+  position: fixed;
+  bottom: 0;
+}
+
+footer p {
+  width: inherit;
+  text-align: center;
+}
+
+footer a {
+  color: gold;
+  text-decoration: none;
+}
+
+footer img {
+  margin-left: 10px;
+  height: 48px;
+  aspect-ratio: auto;
+  position: fixed;
+  bottom: 10%;
+  right: 2%;
+}
+
+nav {
+  display: flex;
+  justify-content: space-around;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 10px;
+  align-content: center;
+}
+
+.content {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  width: inherit;
+  align-items: center;
+  flex-direction: column-reverse;
+  justify-content: space-evenly;
+}
+
+.username {
+  color: gold;
+}
+
+#new_password {
+  width: inherit;
+}
+
+form {
+  margin: 20px 0;
+  padding: 10px;
+  height: auto;
+  min-height: 150px;
+  min-width: 300px;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  border: 1px solid;
+  gap: 10px;
+}
+
+form label,
+form input,
+form select {
+  display: block;
+  margin: 5px 0;
+  align-content: center;
+}
+
+form select,
+form input {
+  width: 185px;
+}
+
+.form-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-item a {
+  color: darkslategray;
+  width: 100%;
+  text-decoration: none;
+  text-align: center;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.flash-messages {
+  margin: 20px 0;
+}
+
+.flash-success {
+  color: green;
+}
+
+.flash-danger {
+  color: red;
+}
+
+/* Styles for the error page */
+.error-container {
+  text-align: center;
+  margin: 50px auto;
+  padding: 20px;
+  border: 2px solid red;
+  border-radius: 10px;
+  background-color: #ffe6e6;
+}
+
+.error-container h1 {
+  color: red;
+}
+
+.error-container p {
+  color: #333;
+}
+
+.flash-danger {
+  color: red;
+  font-weight: bold;
+}
+
+.flash-messages {
+  margin: 10px 0;
+}
+
+.error-container a {
+  color: #333;
+  text-decoration: none;
+  border: 1px solid red;
+  padding: 5px 10px;
+  background-color: red;
+  color: white;
+  border-radius: 5px;
+}
+
+.error-container a:hover {
+  background-color: darkred;
+}
+
+/* Admin Dashboard Styles */
+.admin-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-container h1 {
+  margin-bottom: 20px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 15px;
+  margin: 5px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: #007bff;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  display: block;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.user-table th,
+.user-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.user-table th {
+  background-color: #f2f2f2;
+}
+
+.user-table thead {
+  position: sticky;
+  top: -0.1px;
+}
+
+.user-table tr:first-child th {
+  min-width: 50px;
+}
+
+.user-table tr > :not(:first-child) {
+  min-width: 100px;
+}
+
+/* Transactions Styles */
+.transactions-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.transactions-container h1 {
+  margin-bottom: 20px;
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  display: block;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.transactions-table th,
+.transactions-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.transactions-table th {
+  background-color: #f2f2f2;
+}
+
+.transactions-table tr:first-child th {
+  min-width: 50px;
+}
+
+.transactions-table tr > :not(:first-child) {
+  min-width: 200px;
+}
+
+.transactions-table thead {
+  position: sticky;
+  top: -0.1px;
+}
+
+/* Debug View Styles */
+.debug-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.debug-container h1 {
+  margin-bottom: 20px;
+}
+
+/* Feedback View Styles */
+.feedback-container input {
+  min-width: inherit;
+  width: inherit;
+  max-width: 400px;
+}
+
+.feedback-container textarea {
+  height: inherit;
+  min-width: calc(95% + 10px);
+  min-height: 20px;
+  max-width: 380px;
+  max-height: 200px;
+}
+
+/* Reset Password View Styles */
+.reset-password-container input {
+  width: inherit;
+}
+
+/* Bugs View Styles */
+.bugs-container input {
+  min-width: inherit;
+  width: inherit;
+  max-width: 400px;
+}
+
+.bugs-container textarea {
+  height: inherit;
+  min-width: calc(95% + 10px);
+  min-height: 20px;
+  max-width: 380px;
+  max-height: 200px;
+}

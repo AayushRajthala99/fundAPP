@@ -1,0 +1,322 @@
+{
+  "info": {
+    "_postman_id": "cde180fe-99f4-420c-8b3f-e3721e6af0a3",
+    "name": "Fund Transfer App API v1",
+    "description": "Postman collection for the Fund Transfer App API endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32770596",
+    "_collection_link": "https://vairav-957824.postman.co/workspace/WAF-3.0-%255B-VAIRAV-%255D~3a00ce78-7293-4256-8060-eff5b3546fc4/collection/32770596-cde180fe-99f4-420c-8b3f-e3721e6af0a3?action=share&source=collection_link&creator=32770596"
+  },
+  "item": [
+    {
+      "name": "API Index",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", ""]
+        },
+        "description": "API Index endpoint that returns a welcome message and basic instructions."
+      },
+      "response": []
+    },
+    {
+      "name": "Login User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var responseJson = JSON.parse(responseBody);",
+              "pm.collectionVariables.set(\"authtoken\", responseJson.access_token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"john\",\n  \"password\": \"iamjohn\"\n}\n\n// {\n//   \"username\": \"admin\",\n//   \"password\": \"admin123\"\n// }\n\n// {\n//   \"username\": \"attacker\",\n//   \"password\": \"attacker\"\n// }"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/login_user",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "login_user"]
+        },
+        "description": "Authenticate user and receive JWT token.\n\n**Input:** JSON body with `username` and `password`.\n\n**Example Input:**\n```\n{\n  \"username\": \"johndoe\",\n  \"password\": \"password123\"\n}\n```\n\n**Expected Output:**\n\nSuccess:\n```\n{\n  \"user_id\": 1,\n  \"role\": \"user\",\n  \"access_token\": \"...\"\n}\n```\nError:\n```\n{\n  \"message\": \"Invalid Credentials!\"\n}\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"attacker\",\n  \"email\": \"attacker@fundAPP.com\",\n  \"password\": \"attacker\"\n  ,\"role\" : \"admin\" // Mass Assignment here...\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/register_user",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "register_user"]
+        },
+        "description": "Register a new user.\n\n**Input:** JSON body with `username`, `email`, and `password`.\n\n**Example Input:**\n```\n{\n  \"username\": \"johndoe\",\n  \"email\": \"johndoe@example.com\",\n  \"password\": \"password123\"\n}\n```\n\n**Expected Output:**\n\nSuccess:\n```\n{\n  \"message\": \"User registered successfully\"\n}\n```\nError:\n```\n{\n  \"message\": \"Username, email, and password are required\"\n}\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Users",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authtoken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/get_users",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "get_users"]
+        },
+        "description": "Fetch the list of all users. Requires a JWT token for authentication.\n\n**Expected Output:**\n\nSuccess:\n```\n[\n  {\n    \"id\": 1,\n    \"username\": \"johndoe\",\n    \"email\": \"johndoe@example.com\",\n    \"role\": \"user\",\n    \"balance\": 100\n  },\n  ...\n]\n```"
+      },
+      "response": []
+    },
+    {
+      "name": "Get User",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authtoken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/get_user?user_id={{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "get_user"],
+          "query": [
+            {
+              "key": "user_id",
+              "value": "{{userId}}"
+            }
+          ]
+        },
+        "description": "Fetch a user's information by their ID. Requires a JWT token for authentication.\n\n**Expected Output:**\n\nSuccess:\n```\n{\n  \"user\": {\n    \"id\": 1,\n    \"username\": \"johndoe\",\n    \"email\": \"johndoe@example.com\",\n    \"role\": \"user\"\n  }\n}\n```"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Transactions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authtoken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/get_transactions?user_id={{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "get_transactions"],
+          "query": [
+            {
+              "key": "user_id",
+              "value": "{{userId}}"
+            }
+          ]
+        },
+        "description": "Fetch transactions where the user is either the sender or receiver. Requires a JWT token for authentication.\n\n**Expected Output:**\n\nSuccess:\n```\n[\n  {\n    \"id\": 1,\n    \"timestamp\": \"2024-01-01T12:00:00Z\",\n    \"sender_id\": \"1\",\n    \"sender_name\": \"johndoe\",\n    \"receiver_id\": \"2\",\n    \"receiver_name\": \"janedoe\",\n    \"amount\": 100.0\n  },\n  ...\n]\n```"
+      },
+      "response": []
+    },
+    {
+      "name": "Update User",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authtoken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": 4,\n  \"username\": \"david1\",\n  \"email\": \"david1@fundAPP.com\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/update_user",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "update_user"]
+        },
+        "description": "Update user details. Only accessible by admins.\n\n**Input:** JSON body with `user_id` and fields to update (`username`, `email`, `role`).\n\n**Example Input:**\n```\n{\n  \"user_id\": 1,\n  \"username\": \"john_doe_updated\",\n  \"email\": \"john_doe_updated@example.com\"\n}\n```\n\n**Expected Output:**\n\nSuccess:\n```\n{\n  \"message\": \"User updated successfully!\"\n}\n```"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete User",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authtoken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/delete_user?user_id={{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "delete_user"],
+          "query": [
+            {
+              "key": "user_id",
+              "value": "{{userId}}"
+            }
+          ]
+        },
+        "description": "Delete a user by ID. Only accessible by admins.\n\n**Expected Output:**\n\nSuccess:\n```\n{\n  \"message\": \"User deleted successfully!\"\n}\n```"
+      },
+      "response": []
+    },
+    {
+      "name": "Perform Transfer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authtoken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"receiver_id\": \"4\",\n  \"amount\": 50.0\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/transfer",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "transfer"]
+        },
+        "description": "Transfer funds from the logged-in user to another user.\n\n**Input:** JSON body with `receiver` (username of receiver) and `amount`.\n\n**Example Input:**\n```\n{\n  \"receiver\": \"janedoe\",\n  \"amount\": 50.0\n}\n```\n\n**Expected Output:**\n\nSuccess:\n```\n{\n  \"message\": \"Transfer successful!\"\n}\n```"
+      },
+      "response": []
+    },
+    {
+      "name": "Change User Password",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authtoken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"new_password\": \"new_password\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/{{userId}}/change_password",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "users", "{{userId}}", "change_password"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reset Database",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": ["pm.collectionVariables.set(\"authtoken\", \"\");"],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/resetdb",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "resetdb"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "authtoken",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    }
+  ]
+}

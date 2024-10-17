@@ -1,0 +1,29 @@
+{% extends "base.html" %} {% block title %}Report Bug{% endblock %} {% block
+content %}
+<div class="bugs-container">
+  <h1>REPORT BUG</h1>
+  <form method="POST" action="{{ url_for('web_bugs') }}">
+    <label for="title">Bug Title</label>
+    <input
+      type="text"
+      id="title"
+      name="title"
+      placeholder="Enter bug's title..."
+      required
+    />
+    <label for="description">Description</label>
+    <textarea
+      name="description"
+      id="description"
+      placeholder="Bug's description goes here..."
+      required
+    ></textarea>
+    <button type="submit">Submit</button>
+  </form>
+</div>
+
+{% if flag %}
+<p style="color: green">Flag: {{flag}}</p>
+{% endif %} {% if content %}
+<p>SSRF Request Response: {{ content | safe }}</p>
+{% endif %} {% endblock %}

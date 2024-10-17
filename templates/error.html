@@ -1,0 +1,18 @@
+{% extends "base.html" %} {% block title %}Error {{ error_code }}{% endblock %}
+{% block content %}
+<h1>Error {{ error_code }}</h1>
+<div class="error-container">
+  <p>
+    An error occurred while processing your request. Please try again later.
+  </p>
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %}
+  <div class="flash-messages">
+    {% for category, message in messages %}
+    <div class="flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %} {% endwith %}
+  <a href="{{ url_for('index') }}">Go back to Home</a>
+</div>
+{% endblock %}

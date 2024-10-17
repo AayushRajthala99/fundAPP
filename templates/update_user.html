@@ -1,0 +1,35 @@
+{% extends "base.html" %} {% block content %}
+<div class="admin-container">
+  <h1>UPDATE USER</h1>
+
+  <form method="POST" action="/update_user">
+    <div class="form-item">
+      <input type="hidden" name="id" id="id" value="{{ user.id }}" />
+      <label for="username">Username:</label>
+      <input type="text" name="username" id="username" placeholder="Enter your username" value="{{ user.username }}" required />
+    </div>
+    <div class="form-item">
+      <label for="email">Email:</label>
+      <input type="email" name="email" id="email" placeholder="Enter your email" value="{{ user.email }}" required />
+    </div>
+    <div class="form-item">
+      <label for="role">Role:</label>
+      <select name="role" id="role" required>
+        <option value="user" {% if user.role == "user" %}selected{% endif %}>User</option>
+        <option value="admin" {% if user.role == "admin" %}selected{% endif %}>Admin</option>
+    </select>
+    </div>
+
+    <button type="submit">Update User</button>
+  </form>
+  <div class="flash-message">
+    {% with messages = get_flashed_messages() %} {% if messages %}
+    <ul>
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %} {% endwith %}
+  </div>
+</div>
+{% endblock %}

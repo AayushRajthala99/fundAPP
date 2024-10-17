@@ -1,0 +1,40 @@
+{% extends "base.html" %} {% block title %}Transactions{% endblock %} {% block
+content %}
+<div class="transactions-container">
+  <h1>TRANSACTIONS</h1>
+  {% if count == 0 %}
+  <div style="color: red">No Transactions Made Yet.</div>
+  {% else %}
+  <table class="transactions-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Sender</th>
+        <th>Receiver</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for transaction in transactions %}
+      <tr>
+        <td>{{ transaction.id }}</td>
+        <td>{{ transaction.timestamp }}</td>
+        <td>{{ transaction.sender_name }}</td>
+        <td>{{ transaction.receiver_name }}</td>
+
+        {% if transaction.sender_id == user_id %}
+        <td style="color: red">
+          {% elif transaction.receiver_id == user_id %}
+        </td>
+
+        <td style="color: green">{% else %}</td>
+
+        <td style="color: black">{% endif %} ${{ transaction.amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}
