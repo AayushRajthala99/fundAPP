@@ -100,16 +100,6 @@ clear_sessions_and_cache_on_startup()
 app = Flask(__name__)
 app.config.from_object(CONFIG)
 
-# Initialize Mail Handler
-try:
-    mail = smtplib.SMTP(CONFIG.MAIL_SERVER, CONFIG.MAIL_PORT)
-    mail.starttls()
-    mail.login(CONFIG.MAIL_EMAIL, CONFIG.MAIL_APP_KEY)
-
-except Exception as error:
-    logging.error(f"Error setting up mail-server: {error}")
-    exit()
-
 # Initialize Flask-Session
 Session(app)
 
@@ -204,13 +194,21 @@ def sendmail(RECIPIENT, USERNAME, OTP):
         msg.attach(MIMEText(html_template, "html"))
 
         try:
+            mail = smtplib.SMTP(CONFIG.MAIL_SERVER, CONFIG.MAIL_PORT, timeout=30)
+            mail.starttls()
+            mail.login(CONFIG.MAIL_EMAIL, CONFIG.MAIL_APP_KEY)
+
             # Send the email
             mail.sendmail(CONFIG.MAIL_EMAIL, RECIPIENT, msg.as_string())
+
             logging.info(f"Email sent successfully: fundAPP TO {RECIPIENT}")
 
         except Exception as error:
             logging.error(f"Failed to send email: {error}")
             print(f"Failed to send email: {error}")
+
+        finally:
+            mail.quit()
 
     # Start the email task in a separate thread
     email_thread = threading.Thread(target=email_task)
@@ -509,10 +507,21 @@ def transactions():
     response_body = api_response.json()
 
     if api_response.status_code == 200:
-        transactions = response_body
+        transactions = response_body.get("transactions_list")
         count = len(transactions)
+        role = response_body.get("role")
+
+        if not (role) or role == "user":
+            role = session.get("role")
+        else:
+            role = role
+
         return render_template(
-            "transactions.html", count=count, transactions=transactions, user_id=user_id
+            "transactions.html",
+            role=role,
+            count=count,
+            transactions=transactions,
+            user_id=user_id,
         )
     else:
         error_message = response_body.get("message", "Unable to fetch transactions.")
@@ -1281,6 +1290,16 @@ def api_get_transactions():
         transactions = cursor.fetchall()
         conn.close()
 
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, username, email, role, balance FROM users where id = ?",
+            (user_id,),
+        )
+        user = cursor.fetchone()
+        user_role = user["role"] if user else "user"
+        conn.close()
+
         transactions_list = [
             {
                 "id": transaction["id"],
@@ -1294,7 +1313,7 @@ def api_get_transactions():
             for transaction in transactions
         ]
 
-        return jsonify(transactions_list), 200
+        return jsonify({"role": user_role, "transactions_list": transactions_list}), 200
 
     except Exception as error:
         logging.error(f"Error in api_get_transactions: {error}")
