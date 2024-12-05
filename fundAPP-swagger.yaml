@@ -1,18 +1,53 @@
 openapi: 3.0.3
+
 info:
   title: fundAPP API
   description: API for Fund Transfer App (fundAPP)
-  version: 1.0.0
+  version: 1.1.0
+
 servers:
   - url: http://localhost:5000
     description: fundAPP
 
+components:
+  securitySchemes:
+    jwt_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
 paths:
+  /api/v1/:
+    get:
+      summary: Get API Index
+      description: Returns a welcome message and HTML content for the Fund Transfer App.
+      responses:
+        '200':
+          description: Successful response with HTML content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  html_content:
+                    type: string
+                    example: "<h1>Welcome to the Fund Transfer App</h1><p>Explore our services and manage your funds.</p>"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed loading index view"
+
   /api/v1/register_user:
     post:
       summary: Register a new user
+      description: Registers a new user with username, email, password, and an optional role.
       requestBody:
-        description: User registration details
         required: true
         content:
           application/json:
@@ -21,17 +56,18 @@ paths:
               properties:
                 username:
                   type: string
+                  example: "john_doe"
                 email:
                   type: string
-                  format: email
+                  example: "john@example.com"
                 password:
                   type: string
-              required:
-                - username
-                - email
-                - password
+                  example: "securepassword"
+                role:
+                  type: string
+                  example: "user"
       responses:
-        "201":
+        '201':
           description: User registered successfully
           content:
             application/json:
@@ -40,8 +76,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "400":
-          description: Bad request
+                    example: "User registered successfully"
+        '400':
+          description: Bad request due to missing fields
           content:
             application/json:
               schema:
@@ -49,7 +86,8 @@ paths:
                 properties:
                   message:
                     type: string
-        "500":
+                    example: "Username, email, and password are required"
+        '500':
           description: Internal server error
           content:
             application/json:
@@ -58,12 +96,13 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "User registration failed"
 
   /api/v1/login_user:
     post:
       summary: Login a user
+      description: Authenticates a user with username and password, returning an access token if successful.
       requestBody:
-        description: User login credentials
         required: true
         content:
           application/json:
@@ -72,14 +111,13 @@ paths:
               properties:
                 username:
                   type: string
+                  example: "john_doe"
                 password:
                   type: string
-              required:
-                - username
-                - password
+                  example: "securepassword"
       responses:
-        "200":
-          description: User logged in successfully
+        '200':
+          description: Successful login with access token
           content:
             application/json:
               schema:
@@ -87,12 +125,15 @@ paths:
                 properties:
                   user_id:
                     type: integer
+                    example: 1
                   role:
                     type: string
+                    example: "user"
                   access_token:
                     type: string
-        "400":
-          description: Bad request
+                    example: "your_access_token_here"
+        '400':
+          description: Bad request due to missing fields
           content:
             application/json:
               schema:
@@ -100,8 +141,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "401":
-          description: Unauthorized
+                    example: "Username and password are required"
+        '401':
+          description: Unauthorized due to invalid credentials
           content:
             application/json:
               schema:
@@ -109,7 +151,8 @@ paths:
                 properties:
                   message:
                     type: string
-        "404":
+                    example: "Invalid Credentials!"
+        '404':
           description: User not found
           content:
             application/json:
@@ -118,7 +161,8 @@ paths:
                 properties:
                   message:
                     type: string
-        "500":
+                    example: "Invalid Credentials!"
+        '500':
           description: Internal server error
           content:
             application/json:
@@ -127,35 +171,47 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "Login failed"
 
   /api/v1/get_users:
     get:
-      summary: Get a list of all users
+      summary: Retrieve a list of users
+      description: Fetches all users from the database, including their details such as username, email, role, and balance.
       security:
-        - jwt_auth: []
+        - jwt_auth: []  # Assuming JWT authentication is required
       responses:
-        "200":
-          description: List of users
+        '200':
+          description: Successful retrieval of users
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    username:
-                      type: string
-                    email:
-                      type: string
-                      format: email
-                    role:
-                      type: string
-                    balance:
-                      type: number
-                      format: float
-        "500":
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 2
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: "john_doe"
+                        email:
+                          type: string
+                          example: "john@example.com"
+                        role:
+                          type: string
+                          example: "user"
+                        balance:
+                          type: number
+                          format: float
+                          example: 100.00
+        '500':
           description: Internal server error
           content:
             application/json:
@@ -164,60 +220,48 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "Unable to fetch users"
 
-  /api/v1/get_transactions:
+  /api/v1/_debug:
     get:
-      summary: Get transactions for a user
-      security:
-        - jwt_auth: []
-      parameters:
-        - in: query
-          name: user_id
-          schema:
-            type: integer
-          required: true
-          description: ID of the user whose transactions to fetch
+      summary: Debug endpoint to retrieve user details
+      description: Fetches all user details from the database, including sensitive information such as passwords. This endpoint is intended for debugging purposes only.
       responses:
-        "200":
-          description: List of transactions
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    timestamp:
-                      type: string
-                      format: date-time
-                    sender_name:
-                      type: string
-                    receiver_name:
-                      type: string
-                    amount:
-                      type: number
-                      format: float
-        "400":
-          description: Bad request
+        '200':
+          description: Successful retrieval of user details
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-        "404":
-          description: User not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        "500":
+                  count:
+                    type: integer
+                    example: 2
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: "john_doe"
+                        email:
+                          type: string
+                          example: "john@example.com"
+                        password:
+                          type: string
+                          example: "securepassword"  # Note: Exposing passwords is not recommended
+                        role:
+                          type: string
+                          example: "user"
+                        balance:
+                          type: number
+                          format: float
+                          example: 100.00
+        '500':
           description: Internal server error
           content:
             application/json:
@@ -226,36 +270,242 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "Unable to fetch users"
 
-  /api/v1/update_user:
-    put:
-      summary: Update user details
-      security:
-        - jwt_auth: []
+  /api/v1/feedback:
+    post:
+      summary: Submit user feedback
+      description: Allows users to submit feedback along with their username. Returns a confirmation message and any related feedback data.
       requestBody:
-        description: User details to update
         required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                id:
-                  type: integer
                 username:
                   type: string
+                  example: "john_doe"
+                feedback_message:
+                  type: string
+                  example: "Great service, keep it up!"
+      responses:
+        '200':
+          description: Feedback submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Thank you for the feedback!"
+                  feedbacks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        balance:
+                          type: number
+                          format: float
+                          example: 100.00
+                  feedback_message:
+                    type: string
+                    example: "Great service, keep it up!"
+        '400':
+          description: Bad request due to missing fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Username, message required."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type : object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to handle the feedback."
+
+  /api/v1/get_user:
+    get:
+      summary: Retrieve user information by user ID
+      description: Fetches user details based on the provided user ID. Requires JWT authentication.
+      security:
+        - jwt_auth: []  # Assuming JWT authentication is required
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          description: The ID of the user to retrieve.
+          schema:
+            type: string
+            example: "1"
+      responses:
+        '200':
+          description: Successful retrieval of user information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      username:
+                        type: string
+                        example: "john_doe"
+                      email:
+                        type: string
+                        example: "john@example.com"
+                      role:
+                        type: string
+                        example: "user"
+                      balance:
+                        type: number
+                        format: float
+                        example: 100.00
+        '400':
+          description: Bad request due to missing user ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User ID is missing"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User does not exist!"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to fetch user information"
+
+  /api/v1/get_transactions:
+    get:
+      summary: Retrieve transactions for a user
+      description: Fetches a list of transactions for a specified user, where the user is either the sender or the receiver. Requires JWT authentication.
+      security:
+        - jwt_auth: []  # Assuming JWT authentication is required
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          description: The ID of the user for whom to retrieve transactions.
+          schema:
+            type: string
+            example: "1"
+      responses:
+        '200':
+          description: Successful retrieval of transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role:
+                    type: string
+                    example: "user"
+                  transactions_list:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 101
+                        timestamp:
+                          type: string
+                          format: date-time
+                          example: "2023-10-01T12:34:56Z"
+                        sender_id:
+                          type: string
+                          example: "1"
+                        sender_name:
+                          type: string
+                          example: "john_doe"
+                        receiver_id:
+                          type: string
+                          example: "2"
+                        receiver_name:
+                          type: string
+                          example: "jane_doe"
+                        amount:
+                          type: number
+                          format: float
+                          example: 50.00
+        '400':
+          description: Bad request due to missing user ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User ID is missing"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to fetch transactions"
+
+  /api/v1/update_user:
+    put:
+      summary: Update user information
+      description: Allows an admin to update the details of a specified user. Requires JWT authentication.
+      security:
+        - jwt_auth: []  # Assuming JWT authentication is required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  example: "1"
+                username:
+                  type: string
+                  example: "new_username"
                 email:
                   type: string
-                  format: email
+                  example: "new_email@example.com"
                 role:
                   type: string
-                balance:
-                  type: number
-                  format: float
-              required:
-                - id
+                  example: "admin"
       responses:
-        "200":
+        '200':
           description: User updated successfully
           content:
             application/json:
@@ -264,8 +514,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "400":
-          description: Bad request
+                    example: "User updated successfully!"
+        '400':
+          description: Bad request due to missing fields or no fields to update
           content:
             application/json:
               schema:
@@ -273,8 +524,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "403":
-          description: Forbidden
+                    example: "User ID is required"  # or "No fields to update"
+        '403':
+          description: Forbidden action for non-admin users
           content:
             application/json:
               schema:
@@ -282,7 +534,8 @@ paths:
                 properties:
                   message:
                     type: string
-        "500":
+                    example: "Action Denied - Admins only!"
+        '500':
           description: Internal server error
           content:
             application/json:
@@ -291,21 +544,24 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "Unable to update user!"
 
   /api/v1/delete_user:
     delete:
       summary: Delete a user
+      description: Allows an admin to delete a specified user. Requires JWT authentication.
       security:
-        - jwt_auth: []
+        - jwt_auth: []  # Assuming JWT authentication is required
       parameters:
         - name: user_id
           in: query
           required: true
-          description: ID of the user to delete
+          description: The ID of the user to delete.
           schema:
-            type: integer
+            type: string
+            example: "1"
       responses:
-        "200":
+        '200':
           description: User deleted successfully
           content:
             application/json:
@@ -314,8 +570,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "400":
-          description: Bad Request - User ID is required
+                    example: "User deleted successfully"
+        '400':
+          description: Bad request due to missing user ID
           content:
             application/json:
               schema:
@@ -323,8 +580,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "403":
-          description: Operation denied - Admins only
+                    example: "Bad Request - User ID is required"
+        '403':
+          description: Forbidden action for non-admin users
           content:
             application/json:
               schema:
@@ -332,8 +590,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "500":
-          description: Unable to delete user
+                    example: "Action Denied - Admins only!"
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -341,14 +600,15 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "Unable to delete user"
 
   /api/v1/add_user:
     post:
       summary: Add a new user
+      description: Allows an admin to add a new user to the system. Requires JWT authentication.
       security:
-        - jwt_auth: []
+        - jwt_auth: []  # Assuming JWT authentication is required
       requestBody:
-        description: User details to add
         required: true
         content:
           application/json:
@@ -357,20 +617,23 @@ paths:
               properties:
                 username:
                   type: string
+                  example: "new_user"
                 email:
                   type: string
-                  format: email
+                  example: "new_user@example.com"
                 password:
                   type: string
+                  example: "securepassword"
                 role:
                   type: string
+                  example: "user"  # or "admin"
               required:
                 - username
                 - email
                 - password
                 - role
       responses:
-        "201":
+        '201':
           description: User added successfully
           content:
             application/json:
@@ -379,8 +642,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "400":
-          description: Bad request
+                    example: "User added successfully."
+        '400':
+          description: Bad request due to missing required fields
           content:
             application/json:
               schema:
@@ -388,8 +652,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "409":
-          description: Conflict
+                    example: "Username, password, email, and role are required."
+        '403':
+          description: Forbidden action for non-admin users
           content:
             application/json:
               schema:
@@ -397,7 +662,18 @@ paths:
                 properties:
                   message:
                     type: string
-        "500":
+                    example: "Action Denied - Admins only!"
+        '409':
+          description: Conflict due to existing user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User already exists."
+        '500':
           description: Internal server error
           content:
             application/json:
@@ -406,30 +682,33 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "User addition failed."
 
-  /api/v1/perform_transfer:
+  /api/v1/transfer:
     post:
-      summary: Perform a fund transfer
+      summary: Perform a money transfer
+      description: Allows a user to transfer money to another user. Requires JWT authentication.
       security:
-        - jwt_auth: []
+        - jwt_auth: []  # Assuming JWT authentication is required
       requestBody:
-        description: Transfer details
         required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                receiver:
+                receiver_id:
                   type: string
+                  example: "2"
                 amount:
                   type: number
                   format: float
+                  example: 100.50
               required:
-                - receiver
+                - receiver_id
                 - amount
       responses:
-        "200":
+        '200':
           description: Transfer successful
           content:
             application/json:
@@ -438,8 +717,13 @@ paths:
                 properties:
                   message:
                     type: string
-        "400":
-          description: Bad request
+                    example: "Transfer successful!"
+                  balance:
+                    type: number
+                    format: float
+                    example: 900.00  # New balance after transfer
+        '400':
+          description: Bad request due to missing receiver or non-positive amount
           content:
             application/json:
               schema:
@@ -447,8 +731,9 @@ paths:
                 properties:
                   message:
                     type: string
-        "404":
-          description: User not found
+                    example: "Receiver and a positive amount are required"
+        '404':
+          description: User not found (either sender or receiver)
           content:
             application/json:
               schema:
@@ -456,7 +741,8 @@ paths:
                 properties:
                   message:
                     type: string
-        "500":
+                    example: "Sender does not exist"  # or "Receiver does not exist"
+        '500':
           description: Internal server error
           content:
             application/json:
@@ -465,10 +751,322 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: "Transfer failed"
 
-components:
-  securitySchemes:
-    jwt_auth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+  /api/v1/bugs:
+    get:
+      summary: Submit a bug report
+      description: Allows users to submit a bug report with a title and description. Returns a flag if certain conditions are met.
+      parameters:
+        - name: title
+          in: query
+          required: true
+          description: The title of the bug report.
+          schema:
+            type: string
+            example: "Login page error"
+        - name: description
+          in: query
+          required: true
+          description: A detailed description of the bug.
+          schema:
+            type: string
+            example: "The login page throws an error when invalid credentials are entered."
+      responses:
+        '200':
+          description: Bug report submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bug report submitted successfully!"
+                  flag:
+                    type: string
+                    nullable: true
+                    example: "{M!55!NG_C0R5_4TT4CK_5UCC355FUL}"  # Example flag
+                  content:
+                    type: string
+                    nullable: true
+                    example: "<html>...</html>"  # Example content from SSRF response
+        '400':
+          description: Bad request due to missing title or description
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bug's title and description is required"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to submit bug report!"
+
+  /api/v1/users/{user_id}/change_password:
+    patch:
+      summary: Change user password
+      description: Allows a user to change their password. Requires JWT authentication.
+      security:
+        - jwt_auth: []  # Assuming JWT authentication is required
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The ID of the user whose password is to be changed.
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_password:
+                  type: string
+                  example: "newSecurePassword123!"
+              required:
+                - new_password
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password changed successfully!"
+        '400':
+          description: Bad request due to missing user ID or new password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User ID is required."  # or "New password is required."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to change password!"
+
+  /api/v1/validate_email:
+    get:
+      summary: Validate user email and send OTP
+      description: Validates the provided email and sends an OTP to it if the user exists. 
+      parameters:
+        - name: email
+          in: query
+          required: true
+          description: The email address to validate.
+          schema:
+            type: string
+            format: email
+            example: "user@example.com"
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    example: 1  # Example user ID
+                  message:
+                    type: string
+                    example: "OTP sent via Email."
+        '400':
+          description: Bad request due to missing email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email is required"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User does not exist!"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to validate email"
+
+  /api/v1/validate_otp:
+    get:
+      summary: Validate OTP for user
+      description: Validates the provided OTP for a user. The OTP must match the one sent to the user's email.
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          description: The ID of the user for whom the OTP is being validated.
+          schema:
+            type: integer
+            example: 1
+        - name: otp
+          in: query
+          required: true
+          description: The OTP to validate.
+          schema:
+            type: string
+            example: "123456"
+      responses:
+        '200':
+          description: OTP validated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OTP validated successfully."
+        '400':
+          description: Bad request due to missing user ID or OTP
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid Session Detected"  # or "OTP is required" or "Request OTP first!"
+        '404':
+          description: OTP does not match
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OTP does not match!"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to fetch user information"
+
+  /api/v1/users/{user_id}/reset_password:
+    patch:
+      summary: Reset user password
+      description: Allows an admin or authorized user to reset a user's password. Requires user ID and new password.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The ID of the user whose password is to be reset.
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_password:
+                  type: string
+                  example: "newSecurePassword123!"
+              required:
+                - new_password
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset successfully!"
+        '400':
+          description: Bad request due to missing user ID or new password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User ID is required."  # or "New password is required."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to reset password!"
+
+  /api/v1/resetdb:
+    get:
+      summary: Reset the database
+      description: Resets the database by executing a migration SQL script. This action will clear all data and should be used with caution.
+      responses:
+        '200':
+          description: Database reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Database reset successfully! Please login again"
+        '500':
+          description: Internal server error or migration file not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Migration file not found"
