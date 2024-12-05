@@ -1,0 +1,8 @@
+version: '3'
+services:
+  fundapp:
+    build: .
+    container_name: fundapp
+    restart: always
+    ports:
+      - "5000:5000"
