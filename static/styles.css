@@ -238,6 +238,18 @@ button {
 }
 
 /* Transactions Styles */
+.user-filter {
+  display: flex;
+  position: absolute;
+  top: 15vh;
+  right: 5%;
+  gap: 5px;
+}
+
+.user-filter input {
+  height: 30px;
+}
+
 .transactions-container {
   padding: 20px;
   max-width: 1200px;

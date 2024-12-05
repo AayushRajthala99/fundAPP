@@ -1,5 +1,31 @@
 {% extends "base.html" %} {% block title %}Transactions{% endblock %} {% block
 content %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const button = document.querySelector("button");
+    const input = document.querySelector("#user_id");
+
+    button.addEventListener("click", function () {
+      const userId = input.value.trim(); // Get and sanitize the user input
+      if (userId) {
+        // Redirect to the URL with the user ID as a query parameter
+        window.location.href = `/transactions?user_id=${encodeURIComponent(
+          userId
+        )}`;
+      } else {
+        alert("Please enter a valid User ID");
+      }
+    });
+  });
+</script>
+
+{% if role=="admin" %}
+<div class="user-filter">
+  <input type="text" placeholder="Enter User ID" id="user_id" />
+  <button>Filter</button>
+</div>
+{% endif %}
+
 <div class="transactions-container">
   <h1>TRANSACTIONS</h1>
   {% if count == 0 %}
