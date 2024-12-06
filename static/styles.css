@@ -319,6 +319,10 @@ button {
   max-height: 200px;
 }
 
+.feedback-response p {
+  text-align: left;
+}
+
 /* Reset Password View Styles */
 .reset-password-container input {
   width: inherit;

@@ -445,8 +445,8 @@ def feedback():
             response_body = api_response.json()
 
             template = (
-                """<p>Username: %s </p>""" % username
-                + """<p>Message: %s</p> """ % feedback_message
+                """<p><b>Full Name:</b> %s </p>""" % username
+                + """<p><b>Message:</b> %s</p> """ % feedback_message
             )
 
             if api_response.status_code == 200:
@@ -455,22 +455,15 @@ def feedback():
                 feedbacks = response_body.get("feedbacks")
                 flash(message, "success")
 
-                rendered_template = render_template(
-                    "feedback.html",
-                    template=template,
-                    feedback_message=feedback_message,
-                )
-
             else:
                 message = response_body.get("message", "Unable to send feedback.")
                 flash(message, "danger")
 
-                rendered_template = render_template(
-                    "feedback.html",
-                    username=username,
-                    feedbacks=feedbacks,
-                    feedback_message=feedback_message,
-                )
+            rendered_template = render_template(
+                "feedback.html",
+                template=template,
+                feedbacks=feedbacks,
+            )
 
             return render_template_string(rendered_template)
 
@@ -766,16 +759,16 @@ def web_bugs():
 
             if origin and is_valid_domain(origin):
                 headers = {"Origin": origin}
-                api_response = requests.get(
+                api_response = requests.post(
                     f"{host}/api/v1/bugs",
                     headers=headers,
-                    params={"title": title, "description": description},
+                    json={"title": title, "description": description},
                 )
 
             else:
-                api_response = requests.get(
+                api_response = requests.post(
                     f"{host}/api/v1/bugs",
-                    params={"title": title, "description": description},
+                    json={"title": title, "description": description},
                 )
 
             response_body = api_response.json()
@@ -1204,7 +1197,9 @@ def api_feedback():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(f"SELECT balance FROM users WHERE username = '{username}'")
+        cursor.execute(
+            f"SELECT username, balance FROM users WHERE username = '{username}'"
+        )
 
         feedbacks = cursor.fetchall()
 
@@ -1527,12 +1522,13 @@ def api_perform_transfer():
         return jsonify({"message": "Transfer failed"}), 500
 
 
-@app.route("/api/v1/bugs", methods=["GET"])
+@app.route("/api/v1/bugs", methods=["POST"])
 def api_bugs():
     try:
         # Get the path, origin from the query parameters
-        title = request.args.get("title")
-        description = request.args.get("description")
+        data = request.get_json()
+        title = data.get("title")
+        description = data.get("description")
 
         if not title or not description:
             return jsonify({"message": "Bug's title and description is required"}), 400

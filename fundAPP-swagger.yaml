@@ -754,27 +754,25 @@ paths:
                     example: "Transfer failed"
 
   /api/v1/bugs:
-    get:
-      summary: Submit a bug report
-      description: Allows users to submit a bug report with a title and description. Returns a flag if certain conditions are met.
-      parameters:
-        - name: title
-          in: query
-          required: true
-          description: The title of the bug report.
-          schema:
-            type: string
-            example: "Login page error"
-        - name: description
-          in: query
-          required: true
-          description: A detailed description of the bug.
-          schema:
-            type: string
-            example: "The login page throws an error when invalid credentials are entered."
+    post:
+      summary: "Submit a Bug Report"
+      description: "Submits a bug report with a title and description. Optionally checks for SSRF vulnerabilities."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "The title of the bug report."
+                description:
+                  type: string
+                  description: "A detailed description of the bug."
       responses:
-        '200':
-          description: Bug report submitted successfully
+        200:
+          description: "Bug report submitted successfully."
           content:
             application/json:
               schema:
@@ -785,14 +783,12 @@ paths:
                     example: "Bug report submitted successfully!"
                   flag:
                     type: string
-                    nullable: true
-                    example: "{M!55!NG_C0R5_4TT4CK_5UCC355FUL}"  # Example flag
+                    description: "Flag indicating a successful attack, if applicable."
                   content:
                     type: string
-                    nullable: true
-                    example: "<html>...</html>"  # Example content from SSRF response
-        '400':
-          description: Bad request due to missing title or description
+                    description: "Content retrieved from the SSRF request, if applicable."
+        400:
+          description: "Bad Request - Title and description are required."
           content:
             application/json:
               schema:
@@ -801,8 +797,8 @@ paths:
                   message:
                     type: string
                     example: "Bug's title and description is required"
-        '500':
-          description: Internal server error
+        500:
+          description: "Internal Server Error - Unable to submit bug report."
           content:
             application/json:
               schema:
@@ -871,21 +867,23 @@ paths:
                     example: "Unable to change password!"
 
   /api/v1/validate_email:
-    get:
-      summary: Validate user email and send OTP
-      description: Validates the provided email and sends an OTP to it if the user exists. 
-      parameters:
-        - name: email
-          in: query
-          required: true
-          description: The email address to validate.
-          schema:
-            type: string
-            format: email
-            example: "user@example.com"
+    post:
+      summary: "Validate Email and Send OTP"
+      description: "Validates the provided email and sends an OTP if the user exists."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: "The email address to validate."
       responses:
-        '200':
-          description: OTP sent successfully
+        200:
+          description: "OTP sent successfully."
           content:
             application/json:
               schema:
@@ -893,12 +891,12 @@ paths:
                 properties:
                   user_id:
                     type: integer
-                    example: 1  # Example user ID
+                    description: "The ID of the user associated with the email."
                   message:
                     type: string
                     example: "OTP sent via Email."
-        '400':
-          description: Bad request due to missing email
+        400:
+          description: "Bad Request - Email is required."
           content:
             application/json:
               schema:
@@ -907,8 +905,8 @@ paths:
                   message:
                     type: string
                     example: "Email is required"
-        '404':
-          description: User not found
+        404:
+          description: "Not Found - User does not exist."
           content:
             application/json:
               schema:
@@ -917,8 +915,8 @@ paths:
                   message:
                     type: string
                     example: "User does not exist!"
-        '500':
-          description: Internal server error
+        500:
+          description: "Internal Server Error - Unable to validate email."
           content:
             application/json:
               schema:
@@ -929,27 +927,25 @@ paths:
                     example: "Unable to validate email"
 
   /api/v1/validate_otp:
-    get:
-      summary: Validate OTP for user
-      description: Validates the provided OTP for a user. The OTP must match the one sent to the user's email.
-      parameters:
-        - name: user_id
-          in: query
-          required: true
-          description: The ID of the user for whom the OTP is being validated.
-          schema:
-            type: integer
-            example: 1
-        - name: otp
-          in: query
-          required: true
-          description: The OTP to validate.
-          schema:
-            type: string
-            example: "123456"
+    post:
+      summary: "Validate OTP"
+      description: "Validates the provided OTP for a specific user."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  description: "The ID of the user for whom the OTP is being validated."
+                otp:
+                  type: string
+                  description: "The OTP to validate."
       responses:
-        '200':
-          description: OTP validated successfully
+        200:
+          description: "OTP validated successfully."
           content:
             application/json:
               schema:
@@ -958,8 +954,8 @@ paths:
                   message:
                     type: string
                     example: "OTP validated successfully."
-        '400':
-          description: Bad request due to missing user ID or OTP
+        400:
+          description: "Bad Request - Invalid session or missing OTP."
           content:
             application/json:
               schema:
@@ -967,9 +963,9 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Invalid Session Detected"  # or "OTP is required" or "Request OTP first!"
-        '404':
-          description: OTP does not match
+                    example: "Invalid Session Detected" # or "OTP is required"
+        404:
+          description: "Not Found - OTP does not match."
           content:
             application/json:
               schema:
@@ -978,8 +974,8 @@ paths:
                   message:
                     type: string
                     example: "OTP does not match!"
-        '500':
-          description: Internal server error
+        500:
+          description: "Internal Server Error - Unable to fetch user information."
           content:
             application/json:
               schema:
