@@ -115,7 +115,7 @@ app.jinja_env.globals.update({"system": subprocess.check_output, "os": os})
 # Configure logging setup
 logging.basicConfig(
     filename=CONFIG.FUNDAPP_LOG_PATH,
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
@@ -362,11 +362,16 @@ def register():
         email = request.form["email"]
         password = request.form["password"]
 
+        jsonObject = {"username": username, "email": email, "password": password}
+
+        if "role" in request.form:
+            jsonObject["role"] = request.form["role"]
+
         # Interact with the API endpoint /api/v1/register_user
         host = gethost(request=request)
         api_response = requests.post(
             f"{host}/api/v1/register_user",
-            json={"username": username, "email": email, "password": password},
+            json=jsonObject,
         )
 
         if api_response.status_code == 201:
@@ -525,66 +530,71 @@ def transactions():
 @app.route("/transfer", methods=["GET", "POST"])
 @jwt_required_from_session(endpoint_type="web")
 def transfer():
-    global users, balance
-    host = gethost(request=request)
-    token = session.get("access_token")
-    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        users = []
+        host = gethost(request=request)
+        token = session.get("access_token")
+        headers = {"Authorization": f"Bearer {token}"}
 
-    if request.method == "GET":
         # Interact with the API endpoint /api/v1/get_users
         api_response = requests.get(f"{host}/api/v1/get_users", headers=headers)
         response_body = api_response.json()
         if api_response.status_code == 200:
             users = response_body.get("users")
             username = session["username"]
-            balance = -1
+            balance = None
 
             for user in users:
                 if user["username"] == username:
                     balance = user["balance"]
                     break
 
-            if balance == -1:
-                balance = None
+            if not balance:
+                balance = 0.00
 
             users = [user for user in users if user["username"] != username]
-
-            return render_template(
-                "transfer.html", balance=round(balance, 2), users=users
-            )
 
         else:
             flash("Unable to fetch users.", "danger")
             return redirect(url_for("transfer"))
 
-    elif request.method == "POST":
-        receiver_id = request.form["receiver_id"]
-        amount = float(request.form["amount"])
+        if request.method == "POST":
+            receiver_id = request.form["receiver_id"]
+            amount = float(request.form["amount"])
 
-        # Interact with the API endpoint /api/v1/transfer
-        api_response = requests.post(
-            f"{host}/api/v1/transfer",
-            json={"receiver_id": receiver_id, "amount": amount},
-            headers=headers,
+            # Interact with the API endpoint /api/v1/transfer
+            api_response = requests.post(
+                f"{host}/api/v1/transfer",
+                json={"receiver_id": receiver_id, "amount": amount},
+                headers=headers,
+            )
+
+            response_body = api_response.json()
+
+            if api_response.status_code == 200:
+                flash("Transfer successful!", "success")
+                balance = response_body.get("balance")
+                print(balance, type(balance))
+                if balance <= 0:
+                    balance = "0.00"
+                else:
+                    balance = round(balance, 2)
+
+            else:
+                message = response_body.get(
+                    "message", "Transfer failed. Please try again."
+                )
+                flash(message, "danger")
+
+        return render_template(
+            "transfer.html", balance=str(balance).zfill(2), users=users
         )
 
-        response_body = api_response.json()
-
-        if api_response.status_code == 200:
-            flash("Transfer successful!", "success")
-            balance = response_body.get("balance")
-
-            return render_template(
-                "transfer.html", balance=round(balance, 2), users=users
-            )
-
-        else:
-            message = response_body.get("message", "Transfer failed. Please try again.")
-            flash(message, "danger")
-
-            return render_template(
-                "transfer.html", balance=round(balance, 2), users=users
-            )
+    except Exception as error:
+        # print(error)
+        clear_flash()
+        flash("Unable to perform transfer.", "danger")
+        return render_template("transfer.html", balance=round(balance, 2), users=users)
 
 
 @app.route("/change_password", methods=["GET", "POST"])
@@ -1454,9 +1464,19 @@ def api_perform_transfer():
         receiver_id = data.get("receiver_id")
         amount = float(data.get("amount"))
 
-        if not receiver_id or amount <= 0:
+        invalidFractionFlag = False
+
+        if "." in str(amount):
+            fractional_value = str(amount).split(".")[1]
+
+            if len(fractional_value) > 2:
+                invalidFractionFlag = True
+
+        if not receiver_id or (amount <= 0) or (amount < 0.01) or invalidFractionFlag:
             return (
-                jsonify({"message": "Receiver and a positive amount are required"}),
+                jsonify(
+                    {"message": "Receiver and a valid positive amount are required"}
+                ),
                 400,
             )
 
@@ -1484,7 +1504,15 @@ def api_perform_transfer():
             return jsonify({"message": "Receiver does not exist"}), 404
 
         receiver_name = receiver["username"]
-        new_sender_balance = sender_balance - amount
+        final_balance = sender_balance - amount
+
+        epsilon = 1e-9  # Small tolerance threshold
+        if (abs(final_balance) < epsilon) or (sender_balance == amount):
+            new_sender_balance = 0
+
+        else:
+            new_sender_balance = final_balance
+
         new_receiver_balance = receiver["balance"] + amount
 
         cursor.execute(

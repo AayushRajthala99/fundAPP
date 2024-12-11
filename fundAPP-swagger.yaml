@@ -731,7 +731,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Receiver and a positive amount are required"
+                    example: "Receiver and a valid positive amount are required"
         '404':
           description: User not found (either sender or receiver)
           content:
